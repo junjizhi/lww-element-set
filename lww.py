@@ -11,7 +11,8 @@ class LWW_set:
     -remove_set: a separate set of remove operations recorded. Each entry is a tuple of (lww_set element, timestamp).
     """
     def __init__(self):
-        pass
+        self.add_set = {}       # built-in dictionaries are thread-safe. 
+        self.remove_set = {}
 
     def add(self, element, timestamp):
         """Add an element to lww_set
@@ -25,10 +26,21 @@ class LWW_set:
         None
 
         Raise:
-        -RuntimeError: An internal error has occured. 
+        -ValueError: bad timestamp argument 
         
         """
-        pass
+        if not isinstance (timestamp, (int, long)):
+            raise ValueError("timestamp must be an integer or long!")
+
+        self.add_element_to_set(self.add_set, element, timestamp)
+
+    def add_element_to_set(self, target_set, element, timestamp):
+        if element in target_set:
+            current_timestamp = target_set[element]
+            if current_timestamp < timestamp:
+                target_set[element] = timestamp
+        else:
+            target_set[element] = timestamp
 
     def remove(self, element, timestamp):
         """Remove an element to lww_set
@@ -42,10 +54,13 @@ class LWW_set:
         None
 
         Raise:
-        -RuntimeError: An internal error has occured
+        -ValueError: bad timestamp argument 
         
         """
-        pass
+        if not isinstance (timestamp, (int, long)):
+            raise ValueError("timestamp must be an integer or long!")
+
+        self.add_element_to_set(self.remove_set, element, timestamp)
     
     def exist(self, element):
         """Check if the element exists in lww-set
@@ -57,10 +72,15 @@ class LWW_set:
         -True: The element exists in lww-set
         -False: The element does not exists in lww-set 
 
-        Raise:
-        -RuntimeError: An internal error has occured
         """
-        pass
+        if element not in self.add_set:
+            return False
+        elif element not in self.remove_set:
+            return True
+        elif self.add_set[element] >= self.remove_set[element]:
+            return True
+        else:
+            return False        
     
     def get(self):
         """Returns an array of all existing elements in lww-set
@@ -68,9 +88,10 @@ class LWW_set:
         None
         
         Returns:
-        -an array of all (element, timestamp) tuples
-        
-        Raise:
-        -RuntimeError: An internal error has occured
+        -an array of all elements
         """
-        pass
+        result = []
+        for element in self.add_set:
+            if self.exist(element):
+                result.append(element)
+        return result
