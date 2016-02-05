@@ -15,8 +15,8 @@ class LWW_set:
     def __init__(self):
         self.add_set = {}       
         self.remove_set = {}
-        self.add_lock = Lock()
-        self.remove_lock = Lock()
+        self.add_lock = RLock()
+        self.remove_lock = RLock()
 
     def add(self, element, timestamp):
         """Add an element to lww_set, or update the existing element timestamp
