@@ -39,7 +39,7 @@ These above scanarios are allowed in lww-set because we position lww-set as a la
 
 #### Return Values of add/remove()
 
-However, in the API design, a natural question arises: What value should lww-set remove operation return? We are facing the dilemma of using usual set semantic vs. lww-set state changes.
+In the API, what value should lww-set remove operation return? We are facing the dilemma of using usual set semantic vs. lww-set state changes.
 
 For example, when add set and remove set are both empty, i.e., A() R(), we perform Remove(a,1) operation on the lww-set. From an external view, we are deleting a non-existing element in lww-set, so it should return False in this semantic. But what actually happens is remove set will record an R operation and the internal result is changed to: A() R(a,1). So it indeed **changes** the state of lww-set and it should return True.
 
