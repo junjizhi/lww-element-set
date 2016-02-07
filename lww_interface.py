@@ -1,7 +1,6 @@
-"""An LWW_set interface"""
 
 class LWW_set:
-    """A Last-Writer-Win element set.  
+    """An interface fro Last-Writer-Win element set.  
 
     This set stores only one instance of each element, and associates
     each element with a timestamp, i.e., (lww_set element,
@@ -27,11 +26,15 @@ class LWW_set:
         element -- an object that has a unique identifier
         timestamp -- a non-negaive number (int or long)
 
-        Keyword returns:
-        None
+        Keyword returns: 
+        True -- The operation is acknowledged and
+        processed by the data structure according to CRDT semantic,
+        but no guarantee it has take effect. 
+        False -- There was an internal error during operation. A retry may
+        solve the problem. 
 
         Keyword raise:
-        -ValueError: bad timestamp argument
+        ValueError -- bad timestamp argument
         """
         raise NotImplementedError("Subclasses should implement this!")
 
@@ -53,7 +56,11 @@ class LWW_set:
         timestamp -- a non-negaive number (int or long)
 
         Keyword returns:
-        None
+        True -- The operation is acknowledged and
+        processed by the data structure according to CRDT semantic,
+        but no guarantee it has take effect. 
+        False -- There was an error during operation. A retry may
+        solve the problem. 
 
         Keyword raise:
         -ValueError: bad timestamp argument
@@ -82,6 +89,10 @@ class LWW_set:
         Keyword returns:
         -True: The element exists in lww-set
         -False: The element does not exists in lww-set
+
+        Keyword raise:
+        RuntimeError -- An internal error occurs, e.g., disconnection
+        from network. A retry may solve the problem. 
         """
         raise NotImplementedError("Subclasses should implement this!")
     
@@ -96,5 +107,9 @@ class LWW_set:
                 
         Keyword returns:
         an array of all elements
+
+        Keyword raise:
+        RuntimeError -- An internal error occurs, e.g., disconnection
+        from network. A retry may solve the problem. 
         """
         raise NotImplementedError("Subclasses should implement this!")

@@ -1,7 +1,7 @@
 """unit tests for the lww_set"""
 
 import unittest
-from lww import LWW_set
+from lww_python import LWW_python as LWW_set
 import threading
 
 class Test_LWW_Set(unittest.TestCase):

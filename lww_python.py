@@ -17,12 +17,23 @@ class LWW_python(LWW_set):
         
         See base class LWW_set for detals. 
         """
+
         if not isinstance (timestamp, (int, long)):
             raise ValueError("timestamp must be an integer or long!")
 
+        return_flag = True
         self.add_lock.acquire()
-        self.__test_and_add(self.add_set, element, timestamp)
-        self.add_lock.release()
+        # since the operation is on python dictionarily, there should
+        # not be any exceptions at anytime, but to be safe, we use
+        # try/except here
+        try:                    
+            self.__test_and_add(self.add_set, element, timestamp)
+        except:
+            return_flag = False
+        finally:
+            self.add_lock.release()  # make sure to release the lock in any situation
+
+        return return_flag
 
     def __test_and_add(self, target_set, element, timestamp):
         """A non-atomic test and add function helper 
@@ -57,24 +68,35 @@ class LWW_python(LWW_set):
         if not isinstance (timestamp, (int, long)):
             raise ValueError("timestamp must be an integer or long!")
 
+        return_flag = True
         self.remove_lock.acquire()
-        self.__test_and_add(self.remove_set, element, timestamp)
-        self.remove_lock.release()
+        # since the operation is on python dictionarily, there should
+        # not be any exceptions at anytime, but to be safe, we use
+        # try/except here
+        try:
+            self.__test_and_add(self.remove_set, element, timestamp)
+        except:
+            return_flag = False
+        finally:
+            self.remove_lock.release()  # make sure to release the lock in any situation
+        return return_flag
 
     def exist(self, element):
         """Check if the element exists in lww-set 
 
         See base class LWW_set for detals. 
         """
-
-        if element not in self.add_set:  # Checking the dict is atomic and thread-safe
-            return False
-        elif element not in self.remove_set:
-            return True
-        elif self.add_set[element] >= self.remove_set[element]:
-            return True
-        else:
-            return False        
+        try:
+            if element not in self.add_set:  # Checking the dict is atomic and thread-safe
+                return False
+            elif element not in self.remove_set:
+                return True
+            elif self.add_set[element] >= self.remove_set[element]:
+                return True
+            else:
+                return False        
+        except:
+            raise RuntimeError("An internal error occurs when accessing lww-set. A retry may solve the problem. ")
     
     def get(self):
         """Returns an array of all existing elements in lww-set 
