@@ -5,125 +5,6 @@ from lww_python import LWW_python as LWW_set
 import threading
 
 class Test_LWW_Set(unittest.TestCase):
-    def setUP(self):
-        pass
-
-    def test1(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.add(1,0)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test2(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test3(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.add(1,2)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test4(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.add(1,0)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test5(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test6(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.add(1,2)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test7(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.remove(1,0)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test8(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test8(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.remove(1,2)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test9(self):
-        lww = LWW_set()
-        lww.remove(1,1)
-        self.assertFalse(lww.exist(1))
-        lww.remove(1,0)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test10(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.remove(1,0)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test11(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.remove(1,1)
-        self.assertTrue(lww.exist(1))
-        expected_arr = [1,]
-        self.assertEqual(lww.get(), expected_arr)
-
-    def test12(self):
-        lww = LWW_set()
-        lww.add(1,1)
-        self.assertTrue(lww.exist(1))
-        lww.remove(1,2)
-        self.assertFalse(lww.exist(1))
-        expected_arr = []
-        self.assertEqual(lww.get(), expected_arr)
 
     def test_string_add_remove(self):
         lww = LWW_set()
@@ -180,6 +61,123 @@ class Test_LWW_Set(unittest.TestCase):
             # overwrites a new one, then the below assertion may fail. 
             self.assertFalse(lww.exist(element))
 
+    def test1(self):
+        """test1-12 corresponds to a case in README table"""
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.add(1,0)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test2(self):
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test3(self):
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.add(1,2)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test4(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.add(1,0)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test5(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test6(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.add(1,2)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test7(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.remove(1,0)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test8(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test8(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.remove(1,2)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test9(self):
+        lww = LWW_set()
+        lww.remove(1,1)
+        self.assertFalse(lww.exist(1))
+        lww.remove(1,0)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test10(self):
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.remove(1,0)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test11(self):
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.remove(1,1)
+        self.assertTrue(lww.exist(1))
+        expected_arr = ['1',]
+        self.assertEqual(lww.get(), expected_arr)
+
+    def test12(self):
+        lww = LWW_set()
+        lww.add(1,1)
+        self.assertTrue(lww.exist(1))
+        lww.remove(1,2)
+        self.assertFalse(lww.exist(1))
+        expected_arr = []
+        self.assertEqual(lww.get(), expected_arr)
 
 class AddThread (threading.Thread):
     def __init__(self, lww_set, element, timestamp):

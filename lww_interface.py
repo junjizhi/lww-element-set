@@ -1,3 +1,4 @@
+import sys
 
 class LWW_set:
     """An interface fro Last-Writer-Win element set.  
@@ -6,10 +7,11 @@ class LWW_set:
     each element with a timestamp, i.e., (lww_set element,
     timestamp). 
     """
+    MAX_STRING_IN_BYTES = 1 << 29  # 512 MB
+
     def __init__(self):
         pass
 
-    @property
     def add(self, element, timestamp):
         """Add an element to lww_set, or update the existing element timestamp
 
@@ -34,11 +36,10 @@ class LWW_set:
         solve the problem. 
 
         Keyword raise:
-        ValueError -- bad timestamp argument
+        ValueError -- bad element or timestamp argument
         """
         raise NotImplementedError("Subclasses should implement this!")
 
-    @property
     def remove(self, element, timestamp):
         """Remove an element from lww_set 
 
@@ -63,11 +64,10 @@ class LWW_set:
         solve the problem. 
 
         Keyword raise:
-        -ValueError: bad timestamp argument
+        ValueError -- bad element or timestamp argument
         """
         raise NotImplementedError("Subclasses should implement this!")        
 
-    @property
     def exist(self, element):
         """Check if the element exists in lww-set 
 
@@ -93,10 +93,10 @@ class LWW_set:
         Keyword raise:
         RuntimeError -- An internal error occurs, e.g., disconnection
         from network. A retry may solve the problem. 
+        ValueError   -- bad element or timestamp argument
         """
         raise NotImplementedError("Subclasses should implement this!")
     
-    @property
     def get(self):
         """Returns an array of all existing elements in lww-set 
 
@@ -111,5 +111,40 @@ class LWW_set:
         Keyword raise:
         RuntimeError -- An internal error occurs, e.g., disconnection
         from network. A retry may solve the problem. 
+        ValueError   -- bad element or timestamp argument
         """
         raise NotImplementedError("Subclasses should implement this!")
+
+    def validate_timestamp(self, timestamp):
+        """Validate the timestamp argument
+
+        Keyword return
+        timestamp -- validated timestamp in float type
+        
+        Keyword raises:
+        ValueError -- falied to convert the timestamp to a float
+        """
+        try:
+            timestamp = float(timestamp)
+        except:
+            raise ValueError("timestamp must be able to be converted to float!")
+        return timestamp
+
+    def validate_element(self, element):
+        """Validate the timestamp argument
+
+        Keyword return
+        element -- validated element in string value 
+        
+        Keyword raises:
+        ValueError -- falied to convert the element to a string within the maximum limit
+        """
+        try:
+            element = str(element)
+        except:
+            raise ValueError("element must be able to be converted to string!")
+
+        if sys.getsizeof(element) > self.MAX_STRING_IN_BYTES:
+            raise ValueError("element string exceeds the maximum length in bytes: %s!"%self.MAX_STRING_IN_BYTES)
+        
+        return element

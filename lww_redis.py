@@ -20,10 +20,10 @@ class LWW_redis(LWW_set):
         """Add an element to lww_set, or update the existing element timestamp
 
         """
-        if not isinstance (timestamp, (int, long)):
-            raise ValueError("timestamp must be an integer or long!")
 
-        timestamp = float(timestamp)
+        element = self.validate_element(element)
+        timestamp = self.validate_timestamp(timestamp)        
+        
         return_flag = True
         self.add_lock.acquire()
         try:
@@ -57,10 +57,10 @@ class LWW_redis(LWW_set):
         """Remove an element from lww_set 
 
         """
-        if not isinstance (timestamp, (int, long)):
-            raise ValueError("timestamp must be an integer or long!")
 
-        timestamp = float(timestamp)
+        element = self.validate_element(element)
+        timestamp = self.validate_timestamp(timestamp)        
+
         return_flag = True
         self.remove_lock.acquire()
         try:
@@ -76,6 +76,9 @@ class LWW_redis(LWW_set):
         """Check if the element exists in lww-set 
 
         """
+
+        element = self.validate_element(element)
+
         try:
             add_timestamp = self.redis.zscore("lww_add_set", element)
             remove_timestamp = self.redis.zscore("lww_remove_set", element) 

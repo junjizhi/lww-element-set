@@ -1,37 +1,41 @@
-# lww-element-set 
-This is a Last-Writer-Wins Element Set(lww-set) data
-structure implemented in Python. The repo includes lww_python, an
-implementation based on Python dicitonaries (non-distributed) and
-lww_redis, one implemented based on Redis sorted set (ZSET). Both
-implementations are thread-safe. 
+# lww-element-set
 
-Conceptually, lww-set is an Operation-based [Conflict-Free Replicated Date
+This is a Last-Writer-Wins Element Set(lww-set) data
+structure implemented in Python language. Conceptually, lww-set is an
+Operation-based [Conflict-Free Replicated Date
 Type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)(CRDT). It
-has the nice property to achieve strong eventual consistency and monotonicy
-(i.e., no rollbacks). lww_redis
-can be a building block for a time-series event storage layer like
-[Roshi](https://github.com/soundcloud/roshi).
+can achieve strong eventual consistency and
+monotonicy (i.e., no rollbacks).
+
+
+The repo includes lww_python, an implementation based on Python
+dicitonaries (non-distributed) and lww_redis, implemented based on
+Redis sorted set (ZSET). Both implementations are
+thread-safe. lww_redis can be a building block for a time-series event
+storage layer like [Roshi](https://github.com/soundcloud/roshi). Below
+we generally refer to both implementations as "lww-set".
+
 
 ### Operations
 The lww-set provides the following API:
 
-- add(element, timestamp): Adds an element associated with its  timestamp in the set.
-- remove(element, timestamp): Removes an element associated with its
-  timestamp in the set.
-- exist(element): returns True if the element exists, False
-  otherwise. The criteria is whether the element's most recent
+- add(element, timestamp): Adds an *element* associated with its  *timestamp* in the set.
+- remove(element, timestamp): Removes an *element* associated with its
+  *timestamp* in the set.
+- exist(element): returns True if the *element* exists, False
+  otherwise. The criteria is whether the *element*'s most recent
   operation was an add.
-- get(): returns a list of existing elements in lww-set
+- get(): returns a list of existing elements in *lww-set*.
 
-lww-set consists of two separate underlying sets: add_set and
-remove_set. Each set records entries of (element, timestamp). When
+lww-set consists of two separate underlying sets: *add_set* and
+*remove_set*. Each set records entries of (element, timestamp). When
 inserting an element to add_set or remove_set, create a new entry if
 the element does not exist. Otherwise, update the corresponding
-entry's timestamp if input is more recent (i.e., the timestamp
+entry's timestamp if it is more recent (i.e., the timestamp
 argument is larger).
 
-In order to satisfy the CRDT properties, i.e., Associativity,
-Commutativity and Idempotence, lww-set defines the following
+In order to satisfy the CRDT properties, i.e., *Associativity*,
+*Commutativity* and *Idempotence*, lww-set defines the following
 combinations of operations and their resulting states.
 
 | Original state | Operation   | Resulting state |
@@ -51,13 +55,13 @@ combinations of operations and their resulting states.
 
 Note: The above table is different from the one in
 [Roshi](https://github.com/soundcloud/roshi) which does instant
-garbage collection when inserting a new element. The above table makes
-sure lww-set meets strictly the **Commutativity** property, i.e., a+b
+garbage collection. The above table makes
+sure lww-set meets strictly the *Commutativity* property, i.e., a+b
 = b+a, the order of applying operations does not matter. However,
 because there is no garbage collection, there can be redundant copies
 of elements in both add_set and remove_sets, which wastes space.
 
-### Semantics of lww-set add/remove operations 
+### Semantics of lww-set add/remove operations
 
 Unlike any other usual
 set data structure, lww-set's add/remove operation semantic is
@@ -107,9 +111,9 @@ value. If it returns True, it only indicates whether the request is
 acknowledged and processed by the data structure according to CRDT
 semantic, but there is no guarantee it has take effect. If it returns
 False, it could be due to a network connection problem and a retry may
-solve the problem. 
+solve the problem.
 
-#### Eventuality 
+#### Eventuality
 For add() or remove(), if the timestamp argument is
 the most recent (compared with all other elements), the operation will
 eventually succeed. Otherwise, when other processes or threads are
@@ -129,9 +133,25 @@ possible to get an out-dated result.  After all on-the-fly operations
 complete, calling exist() or get() will eventually return the
 up-to-date result.
 
-## Synchronization considerations
 
-### Underlying sets and locking in add() and remove() 
+## Implementation Details
+
+### Element and timestamp value type
+All ``element`` arguments are converted to strings and used as keys
+to index into the set. The code will simply call ``str(element)`` to try
+to convert it into a string.
+It is the users' responsibility to design
+the element-to-string conversion schema. If the users
+decides to use built-in types such as
+int, long, float as element, the conversion is natural. However, for more
+complex object types, users may need to overwrite
+the ``__str__`` functions to return the object identity string. Similar to Redis, we limit the element string to be [512 Megabytes in length](http://redis.io/topics/data-types).
+
+On the other hand, ``timestamp`` is stored as a float value.
+
+### Synchronization considerations
+
+#### Underlying sets and locking in add() and remove()
 
 For lww_python, the two underlying sets are implemented in Python dictionaries. Since
 Python's GIL guarantees that only one thread runs at a time,
@@ -162,51 +182,52 @@ updates the score of an existing number, it has the same semantic as
 Python dictionaries. For test & set semantics in lww_redis, we still
 need to use locks to protect add()/remove() operations.
 
-### No lock in exist() or get() 
+#### No lock in exist() or get()
 
 For exist() or get() implementations, they only need to read values
 from the Python dictionaries, i.e.,add_set and remove_set. Because
 each dictionary read operation in Python is atomic (dicussed above), there is
-no need to protect them with a lock. 
+no need to protect them with a lock.
 
 The similar observation applies to Redis. Up to the current
 version(3.0.7), Redis instance is single threaded and each individual
 command is atomic, just like Python dictionaries. Therefore,
 we do not protect the ZSET read operations, i.e., ZSCORE, ZRANGE, with
-locks. 
+locks.
 
 The implication is that there is no guarantee that exist() or get()
 returns the most up-to-date results when there is concurrent write
 operations on the fly. But the results will be up-to-date eventually.
 
-## Usage Examples 
+## Usage Examples
 ```
 import redis
 r = redis.StrictRedis(host='localhost', port=6379, db=0)   
 lww = LWW_redis(r)
-#lww = LWW_python() # lww based on python dict
+#lww = LWW_python()  # lww based on python dict
 a = 1
 lww.add(a,1)
-lww.exist(a)    # Should return True
+lww.exist(str(a))    # Should return True
+lww.get()            # Should return ['1']
 lww.remove(a,2)
-lww.exist(a))   # Should return False
-lww.get()       # Should return []
+lww.exist(str(a))    # Should return False
+lww.get()            # Should return []
 ```
 
-## Future work 
+## Future work
 
 lww_redis can be a building block for a time-series event storage
 layer like [Roshi](https://github.com/soundcloud/roshi). It is a thin
 layer that supports fast, scalable and reliable writes to a popular
 value (e.g., a twitter update from a celebrity) whose updates will
-propagate to a large number of users. To achieve so, lww_redis needs
-the help from the following components:
+propagate to a large number of followers. To do so, lww_redis needs
+the help of the following components:
 
 - Data sharding that partitions dataset horizontally to achieve better
-load balancing. 
+load balancing.
 - Data repair in case of replica instance or network failures. Because of the CRDT properties,
 defining policies to update out-dated replicas is straight-forwrad.  
-- A server that exposes proper APIs (e.g., HTTP REST) for clients. 
+- A server component that exposes proper APIs (e.g., HTTP REST) for clients.
 
 ## References
 1. [Conflict-Free Replicated Date Type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) Wikipedia page.

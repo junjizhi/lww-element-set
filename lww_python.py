@@ -15,12 +15,11 @@ class LWW_python(LWW_set):
     def add(self, element, timestamp):
         """Add an element to lww_set, or update the existing element timestamp
         
-        See base class LWW_set for detals. 
+        See base class LWW_set docstring for detals. 
         """
-
-        if not isinstance (timestamp, (int, long)):
-            raise ValueError("timestamp must be an integer or long!")
-
+        element = self.validate_element(element)
+        timestamp = self.validate_timestamp(timestamp)
+        
         return_flag = True
         self.add_lock.acquire()
         # since the operation is on python dictionarily, there should
@@ -63,10 +62,11 @@ class LWW_python(LWW_set):
     def remove(self, element, timestamp):
         """Remove an element from lww_set 
 
-        See base class LWW_set for detals. 
+        See base class LWW_set docstring for detals. 
         """
-        if not isinstance (timestamp, (int, long)):
-            raise ValueError("timestamp must be an integer or long!")
+
+        element = self.validate_element(element)
+        timestamp = self.validate_timestamp(timestamp)
 
         return_flag = True
         self.remove_lock.acquire()
@@ -84,8 +84,10 @@ class LWW_python(LWW_set):
     def exist(self, element):
         """Check if the element exists in lww-set 
 
-        See base class LWW_set for detals. 
+        See base class LWW_set docstring for detals. 
         """
+        element = self.validate_element(element)
+
         try:
             if element not in self.add_set:  # Checking the dict is atomic and thread-safe
                 return False
@@ -101,7 +103,7 @@ class LWW_python(LWW_set):
     def get(self):
         """Returns an array of all existing elements in lww-set 
 
-        See base class LWW_set for detals.
+        See base class LWW_set docstring for detals.
         """
         result = []
         for element in self.add_set:
